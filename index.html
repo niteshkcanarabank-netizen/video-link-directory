@@ -158,7 +158,7 @@ function render(){
     html += section(s.name, `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.color}"></span>`, s.domain,
       `<div class="grid">${links.map(card).join('')}</div>`);
   }
-  mainEl.innerHTML = html || `<div class="empty">No links match your search.</div>`;
+  mainEl.innerHTML = html || `<div class="empty">${q ? 'No links match your search.' : 'No links have been added yet — check back soon.'}</div>`;
 }
 function renderChips(){
   const cats = ['All', ...new Set(ALL.map(l => l.category).filter(Boolean))];
