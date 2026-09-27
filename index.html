@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkHub — Video Link Directory</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0f1115;color:#e8eaf0;min-height:100vh}
+#gate{position:fixed;inset:0;background:#0f1115;display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+#gate .box{background:#171a21;border:1px solid #262b36;border-radius:16px;padding:40px 36px;max-width:420px;text-align:center}
+#gate h1{font-size:1.6rem;margin-bottom:10px}
+#gate p{color:#9aa0ae;font-size:.92rem;line-height:1.6;margin-bottom:24px}
+#gate button{background:#ff9000;border:0;color:#111;font-weight:800;font-size:1rem;padding:12px 34px;border-radius:10px;cursor:pointer}
+#gate button.ghost{background:transparent;color:#9aa0ae;border:1px solid #333;margin-left:10px}
+header.top{position:sticky;top:0;z-index:10;background:rgba(15,17,21,.94);backdrop-filter:blur(6px);border-bottom:1px solid #1e222b;padding:14px 20px}
+.top-inner{max-width:1100px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.25rem;letter-spacing:.5px}
+.logo span{color:#ff9000}
+.search{flex:1;min-width:180px;background:#171a21;border:1px solid #262b36;color:#e8eaf0;border-radius:10px;padding:10px 14px;font-size:.95rem;outline:none}
+.search:focus{border-color:#ff9000}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;max-width:1100px;margin:18px auto 0;padding:0 20px}
+.tab{background:#171a21;border:1px solid #262b36;color:#cfd4de;border-radius:999px;padding:7px 16px;font-size:.85rem;font-weight:600;cursor:pointer}
+.tab.active{background:#ff9000;border-color:#ff9000;color:#111}
+main{max-width:1100px;margin:0 auto;padding:22px 20px 60px}
+.site{margin-bottom:34px}
+.site-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.site-head .dot{width:12px;height:12px;border-radius:50%}
+.site-head h2{font-size:1.15rem}
+.site-head .domain{color:#6b7280;font-size:.82rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:#171a21;border:1px solid #232834;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:transform .12s,border-color .12s;text-decoration:none;color:inherit}
+.card:hover{transform:translateY(-3px);border-color:#ff9000}
+.card .label{font-weight:700;font-size:1rem}
+.card .go{margin-top:auto;display:flex;align-items:center;justify-content:space-between;color:#9aa0ae;font-size:.82rem}
+.card .go b{color:#ff9000}
+.empty{color:#6b7280;text-align:center;padding:60px 0}
+footer{text-align:center;color:#525866;font-size:.78rem;padding:30px 20px;line-height:1.7}
+footer a{color:#8a8f9c}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="box">
+    <h1>18+ Only</h1>
+    <p>This is a directory of links to external adult websites. Nothing is hosted or played here — every link opens the respective website in a new tab. You must be of legal age in your region to enter.</p>
+    <button id="enter">I am 18+ — Enter</button>
+    <button class="ghost" onclick="location.href='https://www.google.com'">Leave</button>
+  </div>
+</div>
+<header class="top">
+  <div class="top-inner">
+    <div class="logo">Link<span>Hub</span></div>
+    <input class="search" id="q" type="search" placeholder="Search links…" autocomplete="off">
+  </div>
+</header>
+<div class="tabs" id="tabs"></div>
+<main id="main"></main>
+<footer>
+  LinkHub is a link directory only. All links open external websites in a new tab.<br>
+  No content is hosted, stored, or played on this page. External sites have their own terms and age checks.
+</footer>
+<script src="links.js"></script>
+<script>
+const gate = document.getElementById('gate');
+if (localStorage.getItem('lh18') === '1') gate.style.display = 'none';
+document.getElementById('enter').onclick = () => {
+  localStorage.setItem('lh18', '1');
+  gate.style.display = 'none';
+};
+const tabsEl = document.getElementById('tabs');
+const mainEl = document.getElementById('main');
+const qEl = document.getElementById('q');
+let activeSite = 'All';
+function renderTabs() {
+  const names = ['All', ...SITES.map(s => s.name)];
+  tabsEl.innerHTML = names.map(n =>
+    `<button class="tab${n === activeSite ? ' active' : ''}" data-n="${n}">${n}</button>`).join('');
+  tabsEl.querySelectorAll('.tab').forEach(t =>
+    t.onclick = () => { activeSite = t.dataset.n; renderTabs(); render(); });
+}
+function render() {
+  const q = qEl.value.trim().toLowerCase();
+  let html = '', count = 0;
+  for (const s of SITES) {
+    if (activeSite !== 'All' && s.name !== activeSite) continue;
+    const links = s.links.filter(l =>
+      !q || l.label.toLowerCase().includes(q) || s.name.toLowerCase().includes(q) || s.domain.includes(q));
+    if (!links.length) continue;
+    html += `<section class="site"><div class="site-head"><span class="dot" style="background:${s.color}"></span><h2>${s.name}</h2><span class="domain">${s.domain}</span></div><div class="grid">`;
+    for (const l of links) {
+      count++;
+      html += `<a class="card" href="${l.url}" target="_blank" rel="noopener nofollow"><span class="label">${l.label}</span><span class="go"><span>${s.domain}</span><b>Open &rarr;</b></span></a>`;
+    }
+    html += `</div></section>`;
+  }
+  mainEl.innerHTML = html || `<div class="empty">No links match your search.</div>`;
+}
+qEl.addEventListener('input', render);
+renderTabs(); render();
+</script>
+</body>
+</html>
