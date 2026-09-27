@@ -18,6 +18,16 @@ header.top{position:sticky;top:0;z-index:10;background:rgba(11,13,17,.95);backdr
 .top-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .logo{font-weight:800;font-size:1.3rem;letter-spacing:.5px}
 .logo span{color:#ff9000}
+.vpn-btn{background:transparent;border:1.5px solid #ff9000;color:#ff9000;font-weight:800;font-size:.85rem;padding:8px 16px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.vpn-btn:hover{background:#ff9000;color:#111}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+.modal.open{display:flex}
+.modal .panel{background:#14171d;border:1px solid #2c3d63;border-radius:18px;padding:34px 30px;max-width:400px;width:100%;text-align:center;position:relative}
+.modal .panel h3{font-size:1.25rem;margin-bottom:8px}
+.modal .panel p{color:#9aa0ae;font-size:.88rem;line-height:1.6;margin-bottom:18px}
+.modal .go{display:block;background:#6d9fff;color:#0b0d11;font-weight:800;text-decoration:none;padding:14px;border-radius:12px;font-size:1rem;margin-bottom:16px}
+.modal ol{text-align:left;color:#9aa0ae;font-size:.83rem;line-height:1.9;margin:0 0 6px 18px}
+.modal .x{position:absolute;top:12px;right:16px;background:none;border:0;color:#8a8f9c;font-size:1.1rem;cursor:pointer}
 .search{flex:1;min-width:180px;background:#14171d;border:1px solid #232834;color:#e8eaf0;border-radius:10px;padding:10px 14px;font-size:.95rem;outline:none}
 .search:focus{border-color:#ff9000}
 .chips{max-width:1200px;margin:0 auto;padding:14px 20px 0;display:flex;gap:8px;flex-wrap:wrap}
@@ -77,8 +87,22 @@ footer{text-align:center;color:#4a4f5a;font-size:.76rem;padding:30px 20px;line-h
   <div class="top-inner">
     <div class="logo">Link<span>Hub</span></div>
     <input class="search" id="q" type="search" placeholder="Search links…" autocomplete="off">
+    <button class="vpn-btn" id="vpn-btn">🔒 VPN</button>
   </div>
 </header>
+<div class="modal" id="vpn-modal">
+  <div class="panel">
+    <button class="x" id="vpn-close">✕</button>
+    <h3>🔒 One-tap private browsing</h3>
+    <p>A website can't switch on a VPN by itself — it needs the Proton VPN app. Tap below and you're one step away.</p>
+    <a class="go" href="https://protonvpn.com/download" target="_blank" rel="noopener nofollow">Connect with Proton VPN</a>
+    <ol>
+      <li>Install the app (free plan available)</li>
+      <li>Tap <b>Connect</b> in the app</li>
+      <li>Come back here and browse freely</li>
+    </ol>
+  </div>
+</div>
 <div class="vpn" id="vpn" style="display:none">
   <div class="vpn-in">
     <span style="font-size:1.3rem">🔒</span>
@@ -103,6 +127,10 @@ document.getElementById('vpn-x').onclick = () => {
   localStorage.setItem('lh_vpn','1');
   document.getElementById('vpn').style.display = 'none';
 };
+const vpnModal = document.getElementById('vpn-modal');
+document.getElementById('vpn-btn').onclick = () => vpnModal.classList.add('open');
+document.getElementById('vpn-close').onclick = () => vpnModal.classList.remove('open');
+vpnModal.addEventListener('click', e => { if (e.target === vpnModal) vpnModal.classList.remove('open'); });
 
 const mainEl = document.getElementById('main');
 const chipsEl = document.getElementById('chips');
