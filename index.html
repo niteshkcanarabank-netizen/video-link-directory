@@ -51,6 +51,9 @@ main{max-width:1200px;margin:0 auto;padding:8px 20px 60px}
 .card:hover{transform:translateY(-4px);border-color:#3a4150;box-shadow:0 10px 28px rgba(0,0,0,.5)}
 .thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0e1014}
 .thumb .art{position:absolute;inset:0;transition:transform .3s}
+.thumb .art-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.card:hover .thumb .art-img{transform:scale(1.07)}
+.thumb .tint{position:absolute;inset:0;pointer-events:none}
 .thumb .scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px);pointer-events:none}
 .thumb .letter{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:4rem;font-weight:800;color:rgba(255,255,255,.13);text-shadow:0 2px 18px rgba(0,0,0,.5);letter-spacing:1px;pointer-events:none}
 .thumb .vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.5) 100%);pointer-events:none}
@@ -140,6 +143,17 @@ let activeCat = 'All';
 const ALL = [];
 SITES.forEach(s => s.links.forEach(l => ALL.push({...l, site: s.name, domain: s.domain, color: s.color})));
 
+const THUMBS = {
+  Hub: 'assets/thumbs/thumb-hub.jpg',
+  Browse: 'assets/thumbs/thumb-browse.jpg',
+  Stars: 'assets/thumbs/thumb-stars.jpg',
+  Trending: 'assets/thumbs/thumb-trending.jpg',
+};
+function thumbFor(l, rail){
+  if (rail === 'trending') return THUMBS.Trending;
+  return THUMBS[l.category] || THUMBS.Hub;
+}
+
 function artStyle(color){
   return `background:
     radial-gradient(circle at 18% 12%, ${color}66 0, transparent 42%),
@@ -147,13 +161,14 @@ function artStyle(color){
     radial-gradient(circle at 65% 25%, #ffffff10 0, transparent 30%),
     linear-gradient(135deg, #232833 0%, #12151c 55%, #0b0d11 100%)`;
 }
-function card(l){
+function card(l, rail){
   const meta = [l.views ? l.views+' views' : '', l.rating ? l.rating : ''].filter(Boolean).join(' &nbsp;•&nbsp; ');
-  const letter = (l.label || l.site).trim().charAt(0).toUpperCase();
+  const img = thumbFor(l, rail);
   return `<a class="card" href="${l.url}" target="_blank" rel="noopener nofollow">
     <div class="thumb">
       <div class="art" style="${artStyle(l.color)}"></div>
-      <div class="letter">${letter}</div>
+      <img class="art-img" src="${img}" alt="" loading="lazy" onerror="this.remove()">
+      <div class="tint" style="background:linear-gradient(135deg,${l.color}30,transparent 55%)"></div>
       <div class="scan"></div>
       <div class="vig"></div>
       <div class="play"><i>▶</i></div>
@@ -178,13 +193,13 @@ function render(){
   const feat = ALL.filter(l => l.featured && match(l));
   const trend = ALL.filter(l => l.trending && match(l));
   let html = '';
-  if (feat.length) html += section('Featured', '⭐', 'hand-picked hubs', `<div class="rail">${feat.map(card).join('')}</div>`);
-  if (trend.length) html += section('Trending', '🔥', 'popular right now', `<div class="rail">${trend.map(card).join('')}</div>`);
+  if (feat.length) html += section('Featured', '⭐', 'hand-picked hubs', `<div class="rail">${feat.map(l => card(l)).join('')}</div>`);
+  if (trend.length) html += section('Trending', '🔥', 'popular right now', `<div class="rail">${trend.map(l => card(l, 'trending')).join('')}</div>`);
   for (const s of SITES){
     const links = s.links.map(l => ({...l, site:s.name, domain:s.domain, color:s.color})).filter(match);
     if (!links.length) continue;
     html += section(s.name, `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${s.color}"></span>`, s.domain,
-      `<div class="grid">${links.map(card).join('')}</div>`);
+      `<div class="grid">${links.map(l => card(l)).join('')}</div>`);
   }
   mainEl.innerHTML = html || `<div class="empty">${q ? 'No links match your search.' : 'No links have been added yet — check back soon.'}</div>`;
 }
